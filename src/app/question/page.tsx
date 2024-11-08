@@ -37,7 +37,7 @@ const questions: Question[] = [
   },
   {
     question: "How frequently do you create or share content (e.g., blogs, LinkedIn posts)?",
-    category: "Content Creation",
+    category: "ContentCreation",
     options: [
       { text: "I rarely create content.", value: 1 },
       { text: "I create content occasionally but not regularly.", value: 2 },
@@ -45,17 +45,8 @@ const questions: Question[] = [
     ],
   },
   {
-    question: "How often do you engage with other professionals in your network (e.g., through comments, messages, or collaborations)?",
-    category: "Networking",
-    options: [
-      { text: "I don’t engage much with my network.", value: 1 },
-      { text: "I engage occasionally but not regularly.", value: 2 },
-      { text: "I frequently engage with my network and build relationships.", value: 5 },
-    ],
-  },
-  {
     question: "How effectively are you monetizing your personal brand or using it to generate opportunities (e.g., new roles, clients, partnerships)?",
-    category: "Profit Potential",
+    category: "ProfitPotential",
     options: [
       { text: "I haven’t monetized my brand yet.", value: 1 },
       { text: "I’ve had some opportunities, but they’re limited.", value: 2 },
@@ -70,6 +61,14 @@ const Questionnaire = () => {
   const [isOptionSelected, setIsOptionSelected] = useState(false);
   const [score, setScore] = useState<number | null>(null);
 
+  const weights: { [key in Question['category']]: number } = {
+    Goals: 0.15,
+    Positioning: 0.25,
+    Presence: 0.20,
+    ContentCreation: 0.15,
+    ProfitPotential: 0.25,
+  };
+
   const handleResponseChange = (value: number) => {
     const newResponses = [...responses];
     newResponses[currentQuestionIndex] = value;
@@ -78,17 +77,21 @@ const Questionnaire = () => {
   };
 
   const calculateScore = () => {
-    const totalScore = responses.reduce((acc, curr) => acc + curr, 0);
-    const maxScore = questions.length * 5;
-    const finalScore = (totalScore / maxScore) * 10;
-    setScore(finalScore);
-
     const categoryScores = questions.reduce((acc: any, question, index) => {
       const category = question.category;
-      acc[category] = (acc[category] || 0) + responses[index];
+      const weight = weights[category];
+      acc[category] = (acc[category] || 0) + responses[index] * weight;
       return acc;
     }, {});
 
+    const maxWeightedScore = questions.reduce((acc, question) => {
+      return acc + 5 * weights[question.category];
+    }, 0);
+
+    const totalWeightedScore = Object.values(categoryScores).reduce((acc: number, score) => acc + (score as number), 0);
+    const finalScore = (totalWeightedScore / maxWeightedScore) * 10;
+
+    setScore(finalScore);
     sessionStorage.setItem("personalBrandScore", JSON.stringify({ finalScore, categoryScores }));
   };
 
@@ -156,14 +159,14 @@ const Questionnaire = () => {
         </>
       ) : (
         <div className="mt-4 text-black">
-          <p className="text-3xl font-bold mb-4">Your Personal Brand Score: {`${finalScore}/10`}</p>
-          {finalScore <4 ? <p className="text-lg">You have a lot of room for improvement. Focus on building a strong personal brand to stand out in your industry.</p> : finalScore < 7 ? <p className="text-lg ">You’re on the right track, but there’s still room for growth. Keep refining your personal brand to reach your goals.</p> : <p className="text-lg">You’re doing great! Your personal brand is strong and well-defined. Keep up the good work!</p>}
+          <p className="text-3xl font-bold mb-4">Your Personal Brand Score: {`${Math.round(finalScore)}/10`}</p>
+          {finalScore < 4 ? <p className="text-lg">You have a lot of room for improvement. Focus on building a strong personal brand to stand out in your industry.</p> : finalScore < 7 ? <p className="text-lg">You’re on the right track, but there’s still room for growth. Keep refining your personal brand to reach your goals.</p> : <p className="text-lg">You’re doing great! Your personal brand is strong and well-defined. Keep up the good work!</p>}
 
           {Object.entries(categoryScores).map(([category, score]) => (
             <div key={category} className="mt-4">
-              <p className="text-xl font-semibold">{category} Score: {score as number}/5</p>
-           </div>
-      ))}
+              <p className="text-xl font-semibold">{category} Score: {Math.round((score as number) / weights[category])}/5</p>
+            </div>
+          ))}
         </div>
       )}
     </div>
