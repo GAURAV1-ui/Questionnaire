@@ -5,7 +5,7 @@ import Logo from "../../assets/Kreatoors Logo.svg"
 
 const Navbar = () => {
   return (
-    <header className="flex justify-left p-4 font-poppins md:px-8">
+    <header className="flex justify-left p-4 font-poppins md:px-8 md:gap-2">
       <Image src={Logo} alt="Kreatoors Logo" className="w-8 h-8"/>
       <h1 className="text-xl font-bold text-black">Kreatoors</h1>
     </header>

@@ -130,7 +130,7 @@ const Questionnaire = () => {
       {score === null ? (
         <>
           <div className="mb-4">
-            <p className="text-3xl font-bold text-black mb-10">{currentQuestion.question.toUpperCase()}</p>
+            <p className="text-3xl font-bold text-black mb-10">{currentQuestion.question}</p>
             {currentQuestion.options.map((option, j) => (
               <label key={j} className="flex items-center space-x-2 mt-6 text-black">
                 <input
